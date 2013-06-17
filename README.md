@@ -1,29 +1,18 @@
 # Driveregator
 
-TODO: Write a gem description
-
-## Installation
-
-Add this line to your application's Gemfile:
-
-    gem 'driveregator'
-
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install driveregator
+A little ruby gem to help you review your GoogleDrive permissions.
 
 ## Usage
 
-TODO: Write usage instructions here
+    require 'driveregator'
 
-## Contributing
+    # Get your credentials from the APIs Console
+    # create project here: https://code.google.com/apis/console/
+    # drive api - Courtesy limit: 10,000,000 requests/day
 
-1. Fork it
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create new Pull Request
+    # this will ask for access_key via browser
+    reporter = Driveregator::PermissionReporter.new("YOUR_GOOGLE_APP_KEY", "YOUR_GOOGLE_APP_SECRET")
+
+    reporter.report_by_users # creates a yaml file with the permissions grouped by users
+
+    reporter.report_by_files # creates a yaml file with the permissions grouped by files
