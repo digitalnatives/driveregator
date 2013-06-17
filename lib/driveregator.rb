@@ -75,15 +75,31 @@ module Driveregator
                                 end
     end
 
-    def permissions
+    def permissions_by_files
       perm = {}
       files.each{ |file| perm[file[:title]] = permissions_for_file(file[:id]) }
 
       perm
     end
 
+    def permissions_by_users
+      perm = {}
+      permissions_by_files.each do |filename, perm_hsh|
+        perm_hsh.each do |user, role|
+          perm[user] ||= {}
+          perm[user][filename] = role
+        end
+      end
+
+      perm
+    end
+
+    def report_by_user
+      Yamler::write "report_#{Time.now.strftime('%Y_%m_%d_%H:%M:%S')}.yml", permissions_by_users
+    end
+
     def report_by_file
-      Yamler::write "report_#{Time.now.strftime('%Y_%m_%d_%H:%M:%S')}.yml", permissions
+      Yamler::write "report_#{Time.now.strftime('%Y_%m_%d_%H:%M:%S')}.yml", permissions_by_files
     end
 
     private
