@@ -22,4 +22,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency "google-api-client"
   spec.add_dependency "launchy"
   spec.add_dependency "progress"
+  spec.add_dependency "ya2yaml"
 end
