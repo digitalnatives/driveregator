@@ -2,7 +2,6 @@ require "driveregator/version"
 require 'google/api_client'
 require 'launchy'
 require 'yaml'
-require 'ya2yaml'
 
 class Hash
   def deep_stringify_keys
@@ -94,12 +93,12 @@ module Driveregator
       perm
     end
 
-    def report_by_user
-      Yamler::write "report_#{Time.now.strftime('%Y_%m_%d_%H:%M:%S')}.yml", permissions_by_users
+    def report_by_users
+      Yamler::write "users_report_#{Time.now.strftime('%Y_%m_%d_%H:%M:%S')}.yml", permissions_by_users
     end
 
-    def report_by_file
-      Yamler::write "report_#{Time.now.strftime('%Y_%m_%d_%H:%M:%S')}.yml", permissions_by_files
+    def report_by_files
+      Yamler::write "files_report_#{Time.now.strftime('%Y_%m_%d_%H:%M:%S')}.yml", permissions_by_files
     end
 
     private
