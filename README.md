@@ -6,8 +6,12 @@ A little ruby gem to help you review your GoogleDrive permissions.
 
     require 'driveregator'
 
-    # Get your credentials from the APIs Console
+    # Get your credentials from the APIs Console:
     # create project here: https://code.google.com/apis/console/
+    # in the api access tab click "Create another client ID..."
+    # then choose "installed application" and "other"
+    # click "Create client ID" and then you have your creditentials
+
     # drive api - Courtesy limit: 10,000,000 requests/day
 
     # this will ask for access_key via browser
