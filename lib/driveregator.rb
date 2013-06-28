@@ -74,9 +74,15 @@ module Driveregator
                                 end
     end
 
+
+
     def permissions_by_files
       perm = {}
-      files.each{ |file| perm[file[:title]] = permissions_for_file(file[:id]) }
+      files.each do |file|
+        perm[file[:title]] = {}
+        perm[file[:title]]['link'] = file[:link]
+        perm[file[:title]]['permissions'] = permissions_for_file(file[:id])
+      end
 
       perm
     end
@@ -84,9 +90,11 @@ module Driveregator
     def permissions_by_users
       perm = {}
       permissions_by_files.each do |filename, perm_hsh|
-        perm_hsh.each do |user, role|
+        perm_hsh['permissions'].each do |user, role|
           perm[user] ||= {}
-          perm[user][filename] = role
+          perm[user][filename] = {}
+          perm[user][filename]['link'] = perm_hsh['link']
+          perm[user][filename]['role'] = role
         end
       end
 
