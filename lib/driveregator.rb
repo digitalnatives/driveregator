@@ -56,18 +56,40 @@ module Driveregator
     end
 
     def files
-      @files ||=  @client.execute(:api_method => @drive.files.list).
+      return @files unless @files.nil?
+
+      @files =  {}.tap do |ret|
+                  @client.execute(:api_method => @drive.files.list).
                   data.to_hash['items'].map do |hsh|
-                    { :id     => hsh['id'],
-                      :title  => hsh['title'],
-                      :link   => hsh['alternateLink'] }
+                    ret[hsh['id']] =
+                    { 'id'          => hsh['id'],
+                      'title'       => hsh['title'],
+                      'link'        => hsh['alternateLink'],
+                      'parent_ids'  => parent_ids(hsh['id']) }
                   end
+                end
     end
 
     def parent_ids(file_id)
+      @files[file_id]['parent_ids'] rescue
       @client.execute(:api_method => @drive.parents.list,
                       :parameters => { 'fileId' => file_id }).
                       data['items'].map(&:id)
+    end
+
+    def parent(file_id)
+      files[parent_ids(file_id).first]
+    end
+
+    def parent_titles(file_id)
+      parents = []
+      file_parent = parent file_id
+      while !file_parent.nil?
+        parents.unshift file_parent['title']
+        file_parent = parent file_parent['id']
+      end
+
+      parents
     end
 
     def permissions_for_file(file_id)
@@ -84,10 +106,15 @@ module Driveregator
 
     def permissions_by_files
       perm = {}
-      files.each do |file|
-        perm[file[:title]] = {}
-        perm[file[:title]]['link'] = file[:link]
-        perm[file[:title]]['permissions'] = permissions_for_file(file[:id])
+      files.each do |file_id, file_info|
+        title = file_info['title']
+        perm[title]                   = {}
+        perm[title]['link']           = file_info['link']
+        if file_parent = parent(file_id)
+          perm[title]['parent_link']  = file_parent['link']
+          perm[title]['drive_path']   = parent_titles(file_id).join('/')
+        end
+        perm[title]['permissions']    = permissions_for_file(file_id)
       end
 
       perm
@@ -100,6 +127,9 @@ module Driveregator
           perm[user] ||= {}
           perm[user][filename] = {}
           perm[user][filename]['link'] = perm_hsh['link']
+          perm[user][filename]['parent_link'] = perm_hsh['parent_link'] if perm_hsh['parent_link']
+          perm[user][filename]['drive_path']  = perm_hsh['drive_path'] if perm_hsh['drive_path']
+
           perm[user][filename]['role'] = role
         end
       end
