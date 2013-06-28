@@ -64,6 +64,12 @@ module Driveregator
                   end
     end
 
+    def parent_ids(file_id)
+      @client.execute(:api_method => @drive.parents.list,
+                      :parameters => { 'fileId' => file_id }).
+                      data['items'].map(&:id)
+    end
+
     def permissions_for_file(file_id)
       @permissions[file_id] ||= {}.tap do |ret|
                                   @client.execute(:api_method => @drive.permissions.list,
