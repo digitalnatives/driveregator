@@ -32,7 +32,23 @@ module Driveregator
   class PermissionReporter
     attr_reader :files
 
-    def initialize(client_id, client_secret, tokens = {})
+    def self.config_file_path
+      "#{config_dir}/#{config_file_name}"
+    end
+
+    def self.config_file_name
+      "config.yml"
+    end
+
+    def self.config_dir
+      File.expand_path('~/.drivegegator')
+    end
+
+    def self.create_config_dir
+      Dir.mkdir(config_dir) unless File.directory?(config_dir)
+    end
+
+ def initialize(client_id, client_secret, tokens = {})
       @config = { :client_id      => client_id,
                   :client_secret  => client_secret,
                   :oauth_scope    => 'https://www.googleapis.com/auth/drive',
@@ -143,6 +159,11 @@ module Driveregator
 
     def report_by_files
       Yamler::write "files_report_#{Time.now.strftime('%Y_%m_%d_%H:%M:%S')}.yml", permissions_by_files
+    end
+
+    def dump_config
+      self.class.create_config_dir
+      Yamler::write self.class.config_file_path, @config
     end
 
     private
