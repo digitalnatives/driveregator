@@ -30,7 +30,7 @@ module Driveregator
   end
 
   class PermissionReporter
-    attr_reader :files, :client
+    attr_reader :files
 
     def initialize(client_id, client_secret, tokens = {})
       @config = { :client_id      => client_id,
@@ -149,7 +149,7 @@ module Driveregator
 
     def get_access
       unless @config[:access_token] && @config[:refresh_token]
-        uri = client.authorization.authorization_uri(:approval_prompt => :auto)
+        uri = @client.authorization.authorization_uri(:approval_prompt => :auto)
         Launchy.open(uri)
         $stdout.write  "Enter authorization code: "
         @client.authorization.code = gets.chomp
@@ -159,5 +159,6 @@ module Driveregator
 
       @client.authorization.fetch_access_token!
     end
+
   end
 end
