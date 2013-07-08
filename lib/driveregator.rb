@@ -2,6 +2,7 @@ require "driveregator/version"
 require 'google/api_client'
 require 'launchy'
 require 'yaml'
+require 'highline/import'
 
 class Hash
   def deep_stringify_keys
@@ -48,13 +49,22 @@ module Driveregator
       Dir.mkdir(config_dir) unless File.directory?(config_dir)
     end
 
- def initialize(client_id, client_secret, tokens = {})
+    def initialize(client_id=nil, client_secret=nil, tokens = {})
+
+      stored_config = YAML::load(File.open(self.class.config_file_path)) rescue {}
+
       @config = { :client_id      => client_id,
                   :client_secret  => client_secret,
                   :oauth_scope    => 'https://www.googleapis.com/auth/drive',
                   :redirect_uri   => 'urn:ietf:wg:oauth:2.0:oob',
                   :access_token   => tokens[:access_token],
-                  :refresh_token  => tokens[:refresh_token] }
+                  :refresh_token  => tokens[:refresh_token] }.
+                merge(stored_config){ |key, oldval, newval| oldval || newval }
+
+      unless @config[:client_id] && @config[:client_secret]
+        @config[:client_id]     = ask("Enter your client id:  ")
+        @config[:client_secret] = ask("Enter your client client_secret:  ")
+      end
 
       @permissions = {}
 
@@ -69,6 +79,7 @@ module Driveregator
       @client.authorization.refresh_token = @config[:refresh_token]
 
       get_access
+      dump_config
     end
 
     def files
@@ -172,13 +183,12 @@ module Driveregator
       unless @config[:access_token] && @config[:refresh_token]
         uri = @client.authorization.authorization_uri(:approval_prompt => :auto)
         Launchy.open(uri)
-        $stdout.write  "Enter authorization code: "
-        @client.authorization.code = gets.chomp
-        @config[:access_token] = @client.authorization.access_token
-        @config[:refresh_token] = @client.authorization.refresh_token
+        @client.authorization.code = ask("Enter authorization code:  ")
       end
 
       @client.authorization.fetch_access_token!
+      @config[:access_token] = @client.authorization.access_token
+      @config[:refresh_token] = @client.authorization.refresh_token
     end
 
   end
